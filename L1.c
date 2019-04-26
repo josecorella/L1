@@ -1,8 +1,8 @@
 //
 //  main.c
-//  The Book CLub
+//  The Book Club Save!
 //
-//  Created by Jose Corella on 4/6/17.
+//  Created by Jose Corella on 3/27/17.
 //  Copyright © 2017 Jose Corella. All rights reserved.
 //
 
@@ -28,11 +28,16 @@ void sort(int*, struct BOOK[]); //prompts user for sort type
 void sortauth(int*, struct BOOK[]); //sorts by author's last name
 void sortcat(int*, struct BOOK[]); //sorts by genre
 void sortpg(int*, struct BOOK[]); //sorts by # of pages
+void sorttitle(int*, struct BOOK[]); //sorts by title
+void savelist(int*, struct BOOK[]); //saves list
+void loadlist(int*, struct BOOK[]); //loads list
+
 void display(int*, struct BOOK[]); //displays all books
+
 
 int main (void)
 {
-    struct BOOK novel[30]; //book info
+    struct BOOK novel[101]; //book info
     int flag = 1, choice , bnum = 0; //keeps track of number of books in program
     int* bnumptr = NULL;  //points to bnum
     bnumptr = &bnum;
@@ -54,6 +59,14 @@ int main (void)
                 getchar();//get trash
                 display(bnumptr, novel); //displays all books
                 break;
+            case 4:
+                getchar();//get trash
+                savelist(bnumptr, novel); //displays all books
+                break;
+            case 5:
+                getchar();//get trash
+                loadlist(bnumptr, novel); //displays all books
+                break;
             default:
                 flag = 0; //quits program
                 printf("\nGoodbye. . . \n\n");
@@ -63,25 +76,28 @@ int main (void)
     while(flag == 1);
     return 0;
 }
+
 /****************input() Function*******************/
 int input()
 {
     int flagi = 1;            //prompts user to enter info or sort
-    printf("1: Input Information on a Book\n2: View Sorted List of Books\n3: Display Books\n4: Quit\n");
+    printf("1: Input Information on a Book\n2: View Sorted List of Books\n3: Display Books\n4: Save Books in Current Order\n5: Load list of Books\n6: Quit\n");
     scanf("%d", &flagi);
-    while((flagi != 1) && (flagi != 2) && (flagi != 3) && (flagi != 4)) //makes sure user gives wanted response
+    while((flagi != 1) && (flagi != 2) && (flagi != 3) && (flagi != 4) && (flagi != 5) && (flagi != 6)) //makes sure user gives wanted response
     {
         printf("\n'%d' is not a valid input: ", flagi);
         scanf("%d", &flagi);
     }
     return flagi;
 }
+
 /******************bookinput() Function******************/
 struct BOOK bookinput(int* bnumptr)
 {
     //Declare temp Variables
     struct BOOK inputinfo;          //get information
     int x;
+    char temp[51];
     char first[16];
     char* token;
     
@@ -109,7 +125,7 @@ struct BOOK bookinput(int* bnumptr)
         if(strstr(inputinfo.stitle, "the ") != NULL) //tests for "the" and moves it to end of string
         {
             for( x = 0; x < 51; x++)
-                inputinfo.stitle[x] = inputinfo.stitle[x+4];
+                inputinfo.stitle[x] = inputinfo.stitle[x + 4];
             strcat(inputinfo.stitle,", the");
         }
     
@@ -139,14 +155,18 @@ struct BOOK bookinput(int* bnumptr)
             token = strtok(inputinfo.sauthor, " "); //tokenizes inputinfo.sauthor
             strcpy(first, token);                  //gives first variable first name
             token = strtok(NULL, " ");              //gets last name token
-            strcpy(inputinfo.sauthor, token);      //gives inputinfo.sauthor last name
-            strcat(inputinfo.sauthor, ", ");       //adds ", " to last name for formatting
-            strcat(inputinfo.sauthor, first);      //adds first name to sauthor string
+            strcpy(temp, token);      //gives inputinfo.sauthor last name
+            strcat(temp, ", ");       //adds ", " to last name for formatting
+            strcat(temp, first);      //adds first name to sauthor string
+            strcpy(inputinfo.sauthor, temp);
+            
         }
+    
+    
     return inputinfo;
 }
 /*******************sort() Function*******************/
-void sort(int* bnumptr, struct BOOK srtbk[30])
+void sort(int* bnumptr, struct BOOK srtbk[101])
 {
     int srttype;            //asks for sort type
     printf("\nHow would you like to sort the books?\n1: Author's Last Name\n2: Genre\n3: Number of Pages\n4: Title\n0: Return\n");
@@ -173,13 +193,17 @@ void sort(int* bnumptr, struct BOOK srtbk[30])
             sortpg(bnumptr, srtbk); //sorts by number of pages
             printf("\nSuccessfully Sorted List.\n");
             break;
+        case 4:
+            sorttitle(bnumptr, srtbk); //sorts by title
+            printf("\nSuccessfully Sorted List.\n");
         default:
             break;
     }
     return;
 }
+
 /*******************sortauth() Function*******************/
-void sortauth(int* bnumptr, struct BOOK authbk[30])         //sorts by author name
+void sortauth(int* bnumptr, struct BOOK authbk[101])         //sorts by author name
 {
     //Declare Variables
     struct BOOK authtmp;
@@ -198,7 +222,7 @@ void sortauth(int* bnumptr, struct BOOK authbk[30])         //sorts by author na
 }
 
 /*******************sortcat() Function*******************/
-void sortcat(int* bnumptr, struct BOOK catbk[30])
+void sortcat(int* bnumptr, struct BOOK catbk[101])
 {
     //Declare Variables
     struct BOOK cattmp;
@@ -217,7 +241,7 @@ void sortcat(int* bnumptr, struct BOOK catbk[30])
 }
 
 /*******************sortpg() Function*******************/
-void sortpg(int* bnumptr, struct BOOK pgbk[30])
+void sortpg(int* bnumptr, struct BOOK pgbk[101])
 {
     //Declare Variables
     struct BOOK pgtmp;
@@ -234,8 +258,74 @@ void sortpg(int* bnumptr, struct BOOK pgbk[30])
     
     return;
 }
+
+/**********************sorttitle() Function****************/
+void sorttitle(int* bnumptr, struct BOOK ttlbk[101])
+{
+    //Declare Variables
+    struct BOOK ttltmp;
+    int x, y;
+    
+    for(y = 0; y < *bnumptr; y++)
+        for(x = 0; x < *bnumptr-1; x++)
+            if(strcmp(ttlbk[x].stitle, ttlbk[x+1].stitle) >= 1) //checks which title is bigger
+            {
+                ttltmp = ttlbk[x];        //swaps locations
+                ttlbk[x] = ttlbk[x+1];
+                ttlbk[x+1] = ttltmp;
+            }
+    
+}
+/********************savelist() Function*******************/
+void savelist(int* bnumptr, struct BOOK load[101])
+{
+    //Declare Variables
+    FILE *fp = NULL;
+    char filename[30];
+    int x;
+    printf("\nEnter File Name: ");
+    gets(filename);
+    if((fp = fopen(filename, "wb")) == NULL)
+    {
+        printf("\nCan't Open File '%s'\n", filename);
+        exit(1);
+    }
+    for(x = 0; x < *bnumptr; x++)
+    {
+        fwrite(&load[x], sizeof(struct BOOK), 1, fp);
+    }
+    printf("\nSuccessfully Saved in File '%s' with %d books.\n", filename, *bnumptr);
+    fclose(fp); //close file
+    return;
+}
+
+/*********************loadlist() Function*******************/
+void loadlist(int* bnumptr, struct BOOK save[101])
+{
+    FILE *fpopen = NULL;
+    char openfile[30];
+    
+    
+    printf("\nEnter File Name: ");
+    gets(openfile);
+    if((fpopen = fopen(openfile, "rb")) == NULL)        //open file
+    {
+        printf("\n Can't Open File '%s'\n", openfile);
+        exit(1);
+    }
+    
+    //Read Books from File
+    while(fread(&save[*bnumptr], sizeof(struct BOOK), 1, fpopen) == 1)
+        (*bnumptr) += 1;
+    
+    //Tells user how many books were loaded from file
+    printf("\nSuccessfully Loaded File '%s' with %d books\n", openfile, *bnumptr);
+    fclose(fpopen); //close file
+    return;
+}
+
 /*****************display() Function*********************/
-void display(int* bnumptr, struct BOOK novel_[30])
+void display(int* bnumptr, struct BOOK novel_[101])
 {
     int x; //index for for loop
     if(*bnumptr == 0) //checks to see if books are in program
@@ -251,9 +341,3 @@ void display(int* bnumptr, struct BOOK novel_[30])
     puts("\n");
     return;
 }
-
-
-
-
-
-
